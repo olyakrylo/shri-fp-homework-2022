@@ -38,14 +38,6 @@ const getSquare = prop('square');
 const getTriangle = prop('triangle');
 const getCircle = prop('circle');
 
-const isStarRed = compose(isRed, getStar);
-const isSquareGreen = compose(isGreen, getSquare);
-const isTriangleWhite = compose(isWhite, getTriangle);
-const isCircleWhite = compose(isWhite, getCircle);
-const isCircleBlue = compose(isBlue, getCircle);
-const isSquareOrange = compose(isOrange, getSquare);
-const isTriangleGreen = compose(isGreen, getTriangle);
-
 const allNotWhite = compose(
   equals(0),
   count(isWhite),
@@ -53,18 +45,25 @@ const allNotWhite = compose(
 
 const areTwoValuesSame = (values) => equals(...values);
 
-const getRedAndBlueCounts = (values) => [count(isRed)(values), count(isBlue)(values)];
-
 const getTriangleAndSquare = (event) => [getTriangle(event), getSquare(event)];
 
-const hasColorCount = (colorSelector, count) => compose(
-  lte(count),
+const countColor = (colorSelector) => compose(
   count(colorSelector),
   values,
-)
+);
+
+const hasColorCount = (colorSelector, num) => compose(
+  lte(num),
+  countColor(colorSelector),
+);
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
-export const validateFieldN1 = allPass([isStarRed, isSquareGreen, isTriangleWhite, isCircleWhite]);
+export const validateFieldN1 = allPass([
+  compose(isRed, getStar),
+  compose(isGreen, getSquare),
+  compose(isWhite, getTriangle),
+  compose(isWhite, getCircle),
+]);
 
 // 2. Как минимум две фигуры зеленые.
 export const validateFieldN2 = compose(
@@ -74,17 +73,13 @@ export const validateFieldN2 = compose(
 );
 
 // 3. Количество красных фигур равно кол-ву синих.
-export const validateFieldN3 = compose(
-  areTwoValuesSame,
-  getRedAndBlueCounts,
-  values
-);
+export const validateFieldN3 = (event) => equals(countColor(isRed)(event), countColor(isBlue)(event));
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
 export const validateFieldN4 = allPass([
-  isCircleBlue,
-  isStarRed,
-  isSquareOrange
+  compose(isBlue, getCircle),
+  compose(isRed, getStar),
+  compose(isOrange, getTriangle),
 ]);
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
@@ -97,7 +92,7 @@ export const validateFieldN5 = anyPass([
 
 // 6. Ровно две зеленые фигуры (одна из зелёных – это треугольник), плюс одна красная. Четвёртая оставшаяся любого доступного цвета, но не нарушающая первые два условия
 export const validateFieldN6 = allPass([
-  isTriangleGreen,
+  compose(isGreen, getTriangle),
   hasColorCount(isGreen, 2),
   hasColorCount(isRed, 1)
 ]);
