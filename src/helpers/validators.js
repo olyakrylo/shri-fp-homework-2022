@@ -57,6 +57,11 @@ const hasColorCount = (colorSelector, num) => compose(
   countColor(colorSelector),
 );
 
+const exactColorCount = (colorSelector, num) => compose(
+  equals(num),
+  countColor(colorSelector)
+);
+
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = allPass([
   compose(isRed, getStar),
@@ -93,8 +98,8 @@ export const validateFieldN5 = anyPass([
 // 6. Ровно две зеленые фигуры (одна из зелёных – это треугольник), плюс одна красная. Четвёртая оставшаяся любого доступного цвета, но не нарушающая первые два условия
 export const validateFieldN6 = allPass([
   compose(isGreen, getTriangle),
-  hasColorCount(isGreen, 2),
-  hasColorCount(isRed, 1)
+  exactColorCount(isGreen, 2),
+  exactColorCount(isRed, 1)
 ]);
 
 // 7. Все фигуры оранжевые.
