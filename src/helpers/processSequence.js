@@ -15,6 +15,7 @@
  * Ответ будет приходить в поле {result}
  */
  import Api from '../tools/api';
+import {allPass, compose, equals, length, max, min, tap} from "ramda";
 
  const api = new Api();
 
@@ -25,27 +26,46 @@
      setTimeout(resolve, time);
  })
 
+ const isShorterThan10 = compose(
+   equals(10),
+   max(10),
+   length
+ );
+
+ const isLongerThan2 = compose(
+   equals(2),
+   min(2),
+   length
+ );
+
+ // {value, writeLog, handleSuccess, handleError}
  const processSequence = ({value, writeLog, handleSuccess, handleError}) => {
+      return compose(
+        tap((data) => console.log(data)),
+        allPass([isShorterThan10, isLongerThan2]),
+        tap(() => writeLog(value))
+      )(value);
+
      /**
       * Я – пример, удали меня
       */
-     writeLog(value);
-
-     api.get('https://api.tech/numbers/base', {from: 2, to: 10, number: '01011010101'}).then(({result}) => {
-         writeLog(result);
-     });
-
-     wait(2500).then(() => {
-         writeLog('SecondLog')
-
-         return wait(1500);
-     }).then(() => {
-         writeLog('ThirdLog');
-
-         return wait(400);
-     }).then(() => {
-         handleSuccess('Done');
-     });
+     // writeLog(value);
+     //
+     // api.get('https://api.tech/numbers/base', {from: 2, to: 10, number: '01011010101'}).then(({result}) => {
+     //     writeLog(result);
+     // });
+     //
+     // wait(2500).then(() => {
+     //     writeLog('SecondLog')
+     //
+     //     return wait(1500);
+     // }).then(() => {
+     //     writeLog('ThirdLog');
+     //
+     //     return wait(400);
+     // }).then(() => {
+     //     handleSuccess('Done');
+     // });
  }
 
  export default processSequence;
