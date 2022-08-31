@@ -84,7 +84,7 @@ export const validateFieldN3 = (event) => equals(countColor(isRed)(event), count
 export const validateFieldN4 = allPass([
   compose(isBlue, getCircle),
   compose(isRed, getStar),
-  compose(isOrange, getTriangle),
+  compose(isOrange, getSquare),
 ]);
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).

@@ -15,57 +15,88 @@
  * Ответ будет приходить в поле {result}
  */
  import Api from '../tools/api';
-import {allPass, compose, equals, length, max, min, tap} from "ramda";
+ import {
+   allPass,
+   compose,
+   ifElse,
+   length,
+   partial,
+   tap,
+   test,
+   startsWith,
+   prop,
+   andThen,
+   assoc,
+   __,
+   mathMod,
+   concat,
+   otherwise,
+   complement,
+   gte,
+   lte
+ } from "ramda";
+
+ const doThen = (fn) => andThen(fn);
 
  const api = new Api();
+ const API_URLS = {
+   animals: 'https://animals.tech/',
+   numbers: 'https://api.tech/numbers/base',
+ };
+ const parseResult = prop('result');
 
- /**
-  * Я – пример, удали меня
-  */
- const wait = time => new Promise(resolve => {
-     setTimeout(resolve, time);
- })
-
- const isShorterThan10 = compose(
-   equals(10),
-   max(10),
-   length
+ const toBinaryNumber = compose(
+   doThen(parseResult),
+   api.get(API_URLS.numbers),
+   assoc('number', __, { from: 10, to: 2 }),
  );
 
- const isLongerThan2 = compose(
-   equals(2),
-   min(2),
-   length
+ const toAnimal = compose(
+   doThen(parseResult),
+   api.get(__, {}),
+   concat(API_URLS.animals),
+   String,
  );
 
- // {value, writeLog, handleSuccess, handleError}
+ const isShorterThan10 = compose(lte(__, 10), length);
+ const isLongerThan2 = compose(gte(__, 2), length);
+ const isPositive =  complement(startsWith('-'));
+ const isNumber = test(/^[0-9]+(\.[0-9]+)?$/);
+
+ const validate = allPass([
+   isLongerThan2,
+   isShorterThan10,
+   isPositive,
+   isNumber
+ ]);
+
+ const toNumber = compose(Math.round, Number);
+ const square = (n) => n ** 2;
+ const getMod3 = mathMod(__, 3);
+
  const processSequence = ({value, writeLog, handleSuccess, handleError}) => {
-      return compose(
-        tap((data) => console.log(data)),
-        allPass([isShorterThan10, isLongerThan2]),
-        tap(() => writeLog(value))
-      )(value);
+   const log = tap(writeLog);
 
-     /**
-      * Я – пример, удали меня
-      */
-     // writeLog(value);
-     //
-     // api.get('https://api.tech/numbers/base', {from: 2, to: 10, number: '01011010101'}).then(({result}) => {
-     //     writeLog(result);
-     // });
-     //
-     // wait(2500).then(() => {
-     //     writeLog('SecondLog')
-     //
-     //     return wait(1500);
-     // }).then(() => {
-     //     writeLog('ThirdLog');
-     //
-     //     return wait(400);
-     // }).then(() => {
-     //     handleSuccess('Done');
-     // });
+   const processNumber = compose(
+     otherwise(handleError),
+     doThen(handleSuccess),
+     doThen(toAnimal),
+     doThen(log),
+     doThen(getMod3),
+     doThen(log),
+     doThen(square),
+     doThen(log),
+     doThen(length),
+     doThen(log),
+     toBinaryNumber,
+     log,
+     toNumber,
+   );
+
+   const handleValidationError = partial(handleError, ['ValidationError']);
+   const validateValue = ifElse(validate, processNumber, handleValidationError);
+
+   compose(validateValue, log)(value);
  }
 
  export default processSequence;
