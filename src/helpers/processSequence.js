@@ -23,7 +23,6 @@
    partial,
    tap,
    test,
-   startsWith,
    prop,
    andThen,
    assoc,
@@ -31,7 +30,6 @@
    mathMod,
    concat,
    otherwise,
-   complement,
    gte,
    lte
  } from "ramda";
@@ -60,14 +58,12 @@
 
  const isShorterThan10 = compose(lte(__, 10), length);
  const isLongerThan2 = compose(gte(__, 2), length);
- const isPositive =  complement(startsWith('-'));
- const isNumber = test(/^[0-9]+(\.[0-9]+)?$/);
+ const isPositiveNumber = test(/^[0-9]+(\.[0-9]+)?$/);
 
  const validate = allPass([
    isLongerThan2,
    isShorterThan10,
-   isPositive,
-   isNumber
+   isPositiveNumber
  ]);
 
  const toNumber = compose(Math.round, Number);
